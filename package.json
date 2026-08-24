@@ -1,0 +1,26 @@
+{
+  "name": "butic_boq",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server",
+    "server": "nodemon server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@aps_sdk/authentication": "^1.0.1",
+    "@aps_sdk/data-management": "^1.1.4",
+    "cookie-session": "^2.1.1",
+    "express": "^5.2.1",
+    "forge-apis": "^0.9.11"
+  },
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "nodemo": "^1.0.0",
+    "nodemon": "^3.1.14"
+  }
+}
