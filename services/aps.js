@@ -16,6 +16,9 @@ service.authCallbackMiddleware = async (req, res, next) => {
         clientSecret: APS_CLIENT_SECRET,
         scopes: PUBLIC_TOKEN_SCOPES
     });
+
+    console.log(internalCredentials);
+
     req.session.public_token = publicCredentials.access_token;
     req.session.internal_token = internalCredentials.access_token;
     req.session.refresh_token = publicCredentials.refresh_token;
