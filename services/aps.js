@@ -62,12 +62,18 @@ service.getUserProfile = async (accessToken) => {
 
 service.getHubs = async (accessToken) => {
     const resp = await dataManagementClient.getHubs({ accessToken });
-    return resp.data;
+    return resp.data.map(hub => ({
+        id: hub.id,
+        name: hub.attributes.name
+    }));
 };
 
 service.getProjects = async (hubId, accessToken) => {
     const resp = await dataManagementClient.getHubProjects(hubId, { accessToken });
-    return resp.data;
+    return resp.data.map(project => ({
+        id: project.id,
+        name: project.attributes.name
+    }));
 };
 
 service.getProjectContents = async (hubId, projectId, folderId, accessToken) => {
@@ -82,5 +88,8 @@ service.getProjectContents = async (hubId, projectId, folderId, accessToken) => 
 
 service.getItemVersions = async (projectId, itemId, accessToken) => {
     const resp = await dataManagementClient.getItemVersions(projectId, itemId, { accessToken });
-    return resp.data;
+    return resp.data.map(version => ({
+        id: version.id,
+        name: version.attributes.createTime || version.attributes.displayName
+    }));
 };

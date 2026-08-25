@@ -23,13 +23,14 @@ async function getProjects(hubId) {
 }
 
 async function getContents(hubId, projectId, folderId = null) {
-    const contents = await getJSON(`/api/hubs/${hubId}/projects/${projectId}/contents` + (folderId ? `?folder_id=${folderId}` : ''));
-    return contents.map(item => {
-        if (item.folder) {
-            return createTreeNode(`folder|${hubId}|${projectId}|${item.id}`, item.name, 'icon-my-folder', true);
-        } else {
-            return createTreeNode(`item|${hubId}|${projectId}|${item.id}`, item.name, 'icon-item', true);
-        }
+  const contents = await getJSON(`/api/hubs/${hubId}/projects/${projectId}/contents` + (folderId ? `?folder_id=${folderId}` : ''));
+  return contents.map(item => {
+      // Autodesk devuelve item.type === 'folders' o valida con item.type.includes('folder')
+      if (item.type === 'folders' || (item.type && item.type.includes('folder'))) {
+          return createTreeNode(`folder|${hubId}|${projectId}|${item.id}`, item.name || item.attributes?.displayName, 'icon-my-folder', true);
+      } else {
+          return createTreeNode(`item|${hubId}|${projectId}|${item.id}`, item.name || item.attributes?.displayName, 'icon-item', true);
+      }
     });
 }
 
