@@ -19,7 +19,9 @@ async function getHubs() {
 
 async function getProjects(hubId) {
     const projects = await getJSON(`/api/hubs/${hubId}/projects`);
-    return projects.map(project => createTreeNode(`project|${hubId}|${project.id}`, project.name, 'icon-project', true));
+    return projects.map(project => 
+        createTreeNode(`project|${hubId}|${project.id}`, project.attributes?.name || project.name, 'icon-project', true)
+    );
 }
 
 async function getContents(hubId, projectId, folderId = null) {

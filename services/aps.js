@@ -73,10 +73,7 @@ service.getHubs = async (accessToken) => {
 
 service.getProjects = async (hubId, accessToken) => {
     const resp = await dataManagementClient.getHubProjects(hubId, { accessToken });
-    return resp.data.map(project => ({
-        id: project.id,
-        name: project.attributes.name
-    }));
+    return resp.data; // Devuelve el array de proyectos con todas sus relaciones nativas (incluyendo issues si existen)
 };
 
 service.getProjectContents = async (hubId, projectId, folderId, accessToken) => {
