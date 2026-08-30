@@ -1,6 +1,6 @@
 const express = require('express')
 const { authRefreshMiddleware } = require('../services/aps')
-const hubsController = require('../Controllers/hubController')
+const hubsController = require('../Controllers/hubsController')
 const router = express.Router()
 
 // 1) APLICAMOS UN MIDDLEWARE GENERAL
@@ -15,5 +15,8 @@ router
 router
   .route('/:hub_id/projects/:project_id/contents/:item_id/versions')
   .get(hubsController.getItemVersionsFromAdsk)
+router
+  .route('/:hub_id/projects/:project_id/contents/:item_id/tip')
+  .get(hubsController.getItemTipFromAdsk)
 
 module.exports = router

@@ -93,3 +93,8 @@ service.getItemVersions = async (projectId, itemId, accessToken) => {
         name: version.attributes.createTime || version.attributes.displayName
     }));
 };
+
+service.getItemTip = async (projectId, itemId, accessToken) => {
+  const resp = await dataManagementClient.getItemTip(projectId, itemId, { accessToken });
+  return resp.data;
+};
