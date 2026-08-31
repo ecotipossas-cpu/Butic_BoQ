@@ -1,3 +1,8 @@
+import { initTreeBoq } from "./boq.js";
+import './extensions/LoggerExtension.js';
+import './extensions/SummaryExtension.js';
+import './extensions/HistogramExtension.js';
+
 async function getAccessToken(callback) {
     try {
         const resp = await fetch('/api/auth/token');
@@ -12,23 +17,29 @@ async function getAccessToken(callback) {
 }
 
 export function initViewer(container) {
-    return new Promise(function (resolve, reject) {
-            Autodesk.Viewing.Initializer({ env: 'AutodeskProduction', getAccessToken }, function () {
-            const config = {
-                extensions: ['Autodesk.DocumentBrowser']
-            };
-            const viewer = new Autodesk.Viewing.GuiViewer3D(container, config);
-            viewer.start();
-            viewer.setTheme('light-theme');
-            resolve(viewer);
-        });
-    });
+  return new Promise(function (resolve, reject) {
+    Autodesk.Viewing.Initializer({ getAccessToken }, async function () {
+      const config = {
+        extensions: ["Autodesk.DocumentBrowser", "SummaryExtension", "HistogramExtension"],
+      }
+      const viewer = new Autodesk.Viewing.GuiViewer3D(container, config)
+      viewer.start()
+      viewer.setTheme('light-theme')
+      resolve(viewer)
+    })
+  })
 }
 
 export function loadModel(viewer, urn) {
     function onDocumentLoadSuccess(doc) {
-        viewer.loadDocumentNode(doc, doc.getRoot().getDefaultGeometry());
+        const root = doc.getRoot();
+        const node = root.getMasterViews()[0];
+        viewer.loadDocumentNode(doc, node);
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => {
+            initTreeBoq('#treeBoq', viewer);
+        });
     }
+    
     function onDocumentLoadFailure(code, message) {
         alert('Could not load model. See console for more details.');
         console.error(message);
