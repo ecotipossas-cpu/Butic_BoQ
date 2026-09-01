@@ -1,4 +1,5 @@
 const axios = require('axios');
+const Issue = require('../models/Issue')
 
 const getIssues = async (req, res, next) => {
   try {
@@ -23,6 +24,18 @@ const getIssues = async (req, res, next) => {
   }
 };
 
+const getIssuesByDbidFromMongo = async (req, res, next) => {
+  try {
+    const { dbid } = req.params
+    const issues = await Issue.find({ dbIds: { $in: dbid } })
+    res.status(200).json({ status: 'success', number: issues.length, data: issues })
+  } catch (err) {
+    next(err)
+  }
+}
+
+
 module.exports = {
   getIssues,
+  getIssuesByDbidFromMongo,
 };

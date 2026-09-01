@@ -13,23 +13,48 @@
 </head>
 
 <body>
-    <div id="header">
-        <img class="logo" src="https://cdn.autodesk.io/logo/black/stacked.png" alt="Autodesk Platform Services">
-        <span class="title">Hubs Browser</span>
-        <button id="login" style="visibility: hidden;">Login</button>
+  <div id="header">
+    <img class="logo" src="https://cdn.autodesk.io/logo/black/stacked.png" alt="Autodesk Platform Services">
+    <span class="title">Hubs Browser</span>
+    <button id="login" style="visibility: hidden;">Login</button>
+  </div>
+  <div id="sidebar">
+    <div id="tree"></div>
+    <div id="treeBoq"></div>
+    <div>
+      <canvas id="myChart"></canvas>
     </div>
-    </div>
-<div id="sidebar">
-  <div id="tree"></div>
-  <div id="treeBoq"></div>
-  <div id="dataBoq">El importe total son: <p id="totalAmount"></p></div>
-</div>
-    <div id="preview"></div>
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
-    <script src="https://unpkg.com/inspire-tree@4.3.1/dist/inspire-tree.js"></script>
-    <script src="https://unpkg.com/inspire-tree-dom@4.0.6/dist/inspire-tree-dom.min.js"></script>
-    <script src="/main.js" type="module"></script>
+    <div id="totalAmount"></div>
+  </div>
+  <div id="preview"></div>
+  <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <script src="https://unpkg.com/inspire-tree@4.3.1/dist/inspire-tree.js"></script>
+  <script src="https://unpkg.com/inspire-tree-dom@4.0.6/dist/inspire-tree-dom.min.js"></script>
+  <script src="/main.js" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+        labels: ['Walls', 'Floors', 'Roofs', 'Doors', 'Windows'],
+            datasets: [{
+            label: '# of Instances',
+            data: [80, 19, 3, 5, 2],
+            borderWidth: 1
+        }]
+        },
+        options: {
+        scales: {
+            y: {
+            beginAtZero: true
+            }
+        }
+        }
+    });
+    </script>
 </body>
 
 </html>

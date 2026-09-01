@@ -2,6 +2,8 @@ import { initTreeBoq } from "./boq.js";
 import './extensions/LoggerExtension.js';
 import './extensions/SummaryExtension.js';
 import './extensions/HistogramExtension.js';
+import './extensions/MiPrimeraExtension.js';
+import './extensions/CustomExtension.js'
 
 async function getAccessToken(callback) {
     try {
@@ -20,7 +22,7 @@ export function initViewer(container) {
   return new Promise(function (resolve, reject) {
     Autodesk.Viewing.Initializer({ getAccessToken }, async function () {
       const config = {
-        extensions: ["Autodesk.DocumentBrowser", "SummaryExtension", "HistogramExtension"],
+        extensions: ["MiPrimeraExtension" , "CustomExtension"],
       }
       const viewer = new Autodesk.Viewing.GuiViewer3D(container, config)
       viewer.start()
