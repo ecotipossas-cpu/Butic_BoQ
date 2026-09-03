@@ -1,3 +1,4 @@
+import {getLeafNodesAsync} from './utils.js'
 let _viewer
 const parameter = "Assembly Code"
 
@@ -13,26 +14,8 @@ const getData = async (url) => {
   return await resp.json()
 }
 
-const getLeafNodesAsync = () => {
-  return new Promise((resolve) => {
-    _viewer.model.getObjectTree((tree) => {
-      let leaves = []
-      tree.enumNodeChildren(
-        tree.getRootId(),
-        (dbId) => {
-          if (tree.getChildCount(dbId) === 0) {
-            leaves.push(dbId)
-          }
-        },
-        true
-      )
-      resolve(leaves)
-    })
-  })
-}
-
 const getItemsAsync = async () => {
-  const dbIds = await getLeafNodesAsync()
+  const dbIds = await getLeafNodesAsync(_viewer)
   return new Promise((resolve, reject) => {
     _viewer.model.getBulkProperties(dbIds, [parameter], instances => {
       let items = new Set()
@@ -50,7 +33,7 @@ const getItemsAsync = async () => {
 }
 
 const getDbIdsFromItemAsync = async (itemId) => {
-  const dbIds = await getLeafNodesAsync()
+  const dbIds = await getLeafNodesAsync(_viewer)
   return new Promise((resolve, reject) => {
     _viewer.model.getBulkProperties(dbIds, [parameter], res => {
       let resultDbIds = []

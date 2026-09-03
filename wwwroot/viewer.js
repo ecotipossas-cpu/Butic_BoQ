@@ -1,4 +1,5 @@
-import { initTreeBoq } from "./boq.js";
+import { initTreeBoq } from "./extensions/boq.js";
+
 import './extensions/LoggerExtension.js';
 import './extensions/SummaryExtension.js';
 import './extensions/HistogramExtension.js';
@@ -26,7 +27,7 @@ export function initViewer(container) {
       }
       const viewer = new Autodesk.Viewing.GuiViewer3D(container, config)
       viewer.start()
-      viewer.setTheme('light-theme')
+      viewer.setTheme('light-theme')      
       resolve(viewer)
     })
   })
@@ -39,6 +40,7 @@ export function loadModel(viewer, urn) {
         viewer.loadDocumentNode(doc, node);
         viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => {
             initTreeBoq('#treeBoq', viewer);
+            initChart('myChart', viewer);
         });
     }
     
