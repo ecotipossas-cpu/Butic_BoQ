@@ -1,10 +1,10 @@
 import { initTreeBoq } from "./extensions/boq.js";
-
 import './extensions/LoggerExtension.js';
 import './extensions/SummaryExtension.js';
 import './extensions/HistogramExtension.js';
 import './extensions/MiPrimeraExtension.js';
 import './extensions/CustomExtension.js'
+import './extensions/DataGridExtension.js';
 
 async function getAccessToken(callback) {
     try {
@@ -23,7 +23,7 @@ export function initViewer(container) {
   return new Promise(function (resolve, reject) {
     Autodesk.Viewing.Initializer({ getAccessToken }, async function () {
       const config = {
-        extensions: ["MiPrimeraExtension" , "CustomExtension"],
+        extensions: ["MiPrimeraExtension" , "CustomExtension", "DataGridExtension"],
       }
       const viewer = new Autodesk.Viewing.GuiViewer3D(container, config)
       viewer.start()
@@ -40,7 +40,7 @@ export function loadModel(viewer, urn) {
         viewer.loadDocumentNode(doc, node);
         viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => {
             initTreeBoq('#treeBoq', viewer);
-            initChart('myChart', viewer);
+            // initChart('myChart', viewer);
         });
     }
     

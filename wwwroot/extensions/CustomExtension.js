@@ -1,7 +1,16 @@
 import { BaseExtension } from './BaseExtension.js'
 import { CustomPanel } from './CustomPanel.js'
 import { initTreeBoq } from '../extensions/boq.js'
-import { initChart } from '../extensions/charts.js'
+import {  
+  initChart,
+  updateChart,
+} from '../extensions/charts.js'
+import { getLeafNodesAsync, 
+  getCategoriesDataToChartAsync, 
+  getWallsLocationLineAsync,
+} from '../extensions/utils.js'
+
+
 
 class CustomExtension extends BaseExtension {
   constructor(viewer, options) {
@@ -11,6 +20,8 @@ class CustomExtension extends BaseExtension {
     this._panelLocationLine = null
     this._button = null
     this._button2 = null
+    this._chartCategories = null
+    this._chartLocations = null
   }
 
   load() {
@@ -31,7 +42,7 @@ unload() {
 
 onToolbarCreated() {
   this._panel = new CustomPanel(this._viewer, this._viewer.container, 'customPanel', 'Custom Panel', { divid: 'customdiv' })
-  this._panelLocationLine = new CustomPanel(this._viewer, this._viewer.container, 'locationLinePanel', 'Location Line Panel', { divid: 'locationLineChart' , isChart: true })
+  this._panelLocationLine = new CustomPanel(this._viewer, this._viewer.container, 'dashboard-panel', 'Dashboard', { divid: 'locationLineChart', divid2: 'categoriesChart', isChart: true })
 
   this._button = this.createToolbarButton(
     'custom-button',
@@ -41,16 +52,30 @@ onToolbarCreated() {
   this._button2 = this.createToolbarButton(
     'chart-button',
     'https://img.icons8.com/small/32/brick-wall.png',
-    'Location Line Panel'
+    'Open Dashboard'
   )
   this._button.onClick = () => {
     this._panel.setVisible(!this._panel.isVisible())
     initTreeBoq("#customdiv", this._viewer)
   }
-  this._button2.onClick = () => {
-    this._panelLocationLine.setVisible(!this._panelLocationLine.isVisible())
-    initChart("locationLineChart", this._viewer)
+  this._button2.onClick = async () => {
+  this._panelLocationLine.setVisible(!this._panelLocationLine.isVisible())
+  const dbIds = await getLeafNodesAsync(this._viewer)
+  const dataCategories = await getCategoriesDataToChartAsync(this._viewer, dbIds)
+  const dataLocations = await getWallsLocationLineAsync(this._viewer, dbIds)
+  this._chartLocations = await initChart('locationLineChart', this._viewer, dataLocations)
+  this._chartCategories = await initChart('categoriesChart', this._viewer, dataCategories)
   }
+}
+
+async onIsolationChanged(model, dbIds) {
+  const dataCategories = await getCategoriesDataToChartAsync(
+    this._viewer,
+    dbIds
+  )
+  const dataLocations = await getWallsLocationLineAsync(this._viewer, dbIds)
+  updateChart(this._chartCategories, dataCategories)
+  updateChart(this._chartLocations, dataLocations)
 }
 }
 
