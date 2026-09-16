@@ -120,8 +120,73 @@ const getTotalAmountAsync = async () => {
 }
 
 export const initTreeBoq = (selector, viewer) => {
+  const exportBoqButton = document.getElementById('exportBoQ')
+  
+  if (exportBoqButton) {
+    exportBoqButton.addEventListener('click', async () => {
+      // 1. Obtener los capítulos
+      const capitulos = await getCapitulos()
+
+      // 2. Mapear capítulos cambiando la variable a 'boq'
+      const boq = capitulos.map((x) => ({
+        nat: 'Capitulo',
+        cod: x.id,
+        name: x.text,
+        partidas: [],
+      }))
+
+      // 3. Iterar por cada capítulo para obtener sus partidas y asignarlas
+      for (const cap of boq) {
+  const partidas = await getPartidas(cap.cod)
+  cap.partidas = partidas.map((x) => ({ nat: 'Partida', cod: x.id, quantity: 0.0 }))
+  for (const partida of cap.partidas) {
+    const dbIds = await getDbIdsFromItemAsync(partida.cod)
+    const item = await getData(`/api/items/${partida.cod}`)
+    if (item) {
+      const quantity =
+        item.parameter === 'Count'
+          ? dbIds.length
+          : await getQuantityFromItemAsync(dbIds, item.parameter)
+      partida.quantity = quantity
+    }
+  }
+}
+
+      // 4. Asignar 'boq' a la propiedad data del objeto
+      const data = {
+        nombreLibro: 'BoqFromViewer',
+        nombreHoja: 'BoQ',
+        data: boq,
+      }
+
+      // 5. Enviar la estructura completa al backend
+      const url = '/api/excel'
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      const json = await res.json()
+      console.log('res: ', json.message)
+    })
+
+    exportBoqButton.hidden = false
+  }
+
   _viewer = viewer
-  getTotalAmountAsync()
+
+  const totalAmountHtml = document.getElementById('totalAmount')
+  if (totalAmountHtml) {
+    totalAmountHtml.textContent = 'Calculando Importe total...'
+  }
+
+  setTimeout(() => {
+    getTotalAmountAsync()
+  }, 5000)
+
+  // See http://inspire-tree.com
   const tree = new InspireTree({
     data: (node) => {
       if (!node) {
@@ -131,31 +196,34 @@ export const initTreeBoq = (selector, viewer) => {
       }
     },
   })
-  
+
   tree.on('node.click', async (event, node) => {
-  event.preventTreeDefault()
-  switch (node.type) {
-    case 'capitulo':
-      console.log('he clicado en un capitulo')
-      break
-    case 'partida':
-      const dbIds = await getDbIdsFromItemAsync(node.id)
-      const data = await getData(`/api/items/${node.id}`)
-      if (data) {
-      const quantity =
-        data.parameter === 'Count'
-          ? dbIds.length
-          : await getQuantityFromItemAsync(dbIds, data.parameter)
-          
-            const amount = quantity * data.price
-            console.log('amount: ', amount)
-          } else {
-            console.log('La partida seleccionada no está registrada en la Base de Precios.')
-          }
-          _viewer.isolate(dbIds)
-          _viewer.fitToView(dbIds)
-          break
-      }
-})  
+    event.preventTreeDefault()
+    switch (node.type) {
+      case 'capitulo':
+        console.log('he clicado en un capitulo')
+        break
+      case 'partida':
+        const dbIds = await getDbIdsFromItemAsync(node.id)
+        const data = await getData(`/api/items/${node.id}`)
+        if (data) {
+          const quantity =
+            data.parameter === 'Count'
+              ? dbIds.length
+              : await getQuantityFromItemAsync(dbIds, data.parameter)
+
+          const amount = quantity * data.price
+          console.log('amount: ', amount)
+        } else {
+          console.log(
+            'La partida seleccionada no está registrada en la Base de Precios.'
+          )
+        }
+        _viewer.isolate(dbIds)
+        _viewer.fitToView(dbIds)
+        break
+    }
+  })
+
   return new InspireTreeDOM(tree, { target: selector })
 }
