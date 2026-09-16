@@ -1,4 +1,4 @@
-import {getLeafNodesAsync} from './utils.js'
+import { getLeafNodesAsync } from './utils.js'
 let _viewer
 const parameter = "Assembly Code"
 
@@ -114,9 +114,11 @@ const getTotalAmountAsync = async () => {
     totalAmount += quantity * item.price
   }
 
-  // 4) Escribir el sumatorio total, primero en consola y luego en un div dentro de mi sidebar
+  // 4) Escribir el sumatorio total en el DOM
   const totalAmountHtml = document.getElementById('totalAmount')
-  totalAmountHtml.textContent = `${totalAmount.toFixed(2)} €`
+  if (totalAmountHtml) {
+    totalAmountHtml.textContent = `${totalAmount.toFixed(2)} €`
+  }
 }
 
 export const initTreeBoq = (selector, viewer) => {
@@ -137,29 +139,29 @@ export const initTreeBoq = (selector, viewer) => {
 
       // 3. Iterar por cada capítulo para obtener sus partidas y asignarlas
       for (const cap of boq) {
-  const partidas = await getPartidas(cap.cod)
-  cap.partidas = partidas.map((x) => ({ nat: 'Partida', cod: x.id, quantity: 0.0 }))
-  for (const partida of cap.partidas) {
-    const dbIds = await getDbIdsFromItemAsync(partida.cod)
-    const item = await getData(`/api/items/${partida.cod}`)
-    if (item) {
-      const quantity =
-        item.parameter === 'Count'
-          ? dbIds.length
-          : await getQuantityFromItemAsync(dbIds, item.parameter)
-      partida.quantity = quantity
-    }
-  }
-}
+        const partidas = await getPartidas(cap.cod)
+        cap.partidas = partidas.map((x) => ({ nat: 'Partida', cod: x.id, quantity: 0.0 }))
+        for (const partida of cap.partidas) {
+          const dbIds = await getDbIdsFromItemAsync(partida.cod)
+          const item = await getData(`/api/items/${partida.cod}`)
+          if (item) {
+            const quantity =
+              item.parameter === 'Count'
+                ? dbIds.length
+                : await getQuantityFromItemAsync(dbIds, item.parameter)
+            partida.quantity = quantity
+          }
+        }
+      }
 
-      // 4. Asignar 'boq' a la propiedad data del objeto
+      // 4. Estructurar la carga útil
       const data = {
         nombreLibro: 'BoqFromViewer',
         nombreHoja: 'BoQ',
         data: boq,
       }
 
-      // 5. Enviar la estructura completa al backend
+      // 5. Enviar la estructura al backend
       const url = '/api/excel'
       const res = await fetch(url, {
         method: 'POST',
@@ -168,8 +170,19 @@ export const initTreeBoq = (selector, viewer) => {
         },
         body: JSON.stringify(data),
       })
-      const json = await res.json()
-      console.log('res: ', json.message)
+
+      // 6. Recibir la respuesta como archivo binario (Blob) y forzar descarga local
+      const blob = await res.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = downloadUrl
+      a.download = `${data.nombreLibro}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+
+      // Limpieza de DOM y memoria
+      a.remove()
+      window.URL.revokeObjectURL(downloadUrl)
     })
 
     exportBoqButton.hidden = false

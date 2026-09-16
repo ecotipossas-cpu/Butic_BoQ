@@ -1,53 +1,53 @@
 const ExcelJS = require('exceljs')
-const fs = require('fs')
 const Item = require('../models/Item')
 
 const createExcel = async (req, res, next) => {
   try {
-const { nombreLibro, nombreHoja } = req.body
-    // Crear un nuevo libro de Excel
-const workbook = new ExcelJS.Workbook()
+    const { nombreLibro, nombreHoja } = req.body
 
-// Agregar una hoja al libro
-const sheet = workbook.addWorksheet(nombreHoja)
+    const workbook = new ExcelJS.Workbook()
+    const sheet = workbook.addWorksheet(nombreHoja)
 
-// Agregar datos a la hoja
-sheet.columns = [
-  { header: 'Naturaleza', key: 'nat', width: 20 },
-  { header: 'Codigo', key: 'cod', width: 10 },
-  { header: 'Nombre', key: 'name', width: 15 },
-  { header: 'Unidad', key: 'unit', width: 15 },
-  { header: 'Precio', key: 'price', width: 15 },
-  { header: 'Cantidad', key: 'quantity', width: 15 },
-  { header: 'Importe', key: 'amount', width: 15 },
-]
+    sheet.columns = [
+      { header: 'Naturaleza', key: 'nat', width: 20 },
+      { header: 'Codigo', key: 'cod', width: 10 },
+      { header: 'Nombre', key: 'name', width: 15 },
+      { header: 'Unidad', key: 'unit', width: 15 },
+      { header: 'Precio', key: 'price', width: 15 },
+      { header: 'Cantidad', key: 'quantity', width: 15 },
+      { header: 'Importe', key: 'amount', width: 15 },
+    ]
 
-for (const capitulo of req.body.data) {
-  sheet.addRow(capitulo)
-  for (const partida of capitulo.partidas) {
-    const { name, unit, price } = await Item.findOne({ code: partida.cod })    
-    sheet.addRow({
-      ...partida,
-      name,
-      unit,
-      price,
-      amount: ( partida.quantity * price).toFixed(2),
-    })
-  }
-}
+    for (const capitulo of req.body.data) {
+      sheet.addRow(capitulo)
+      for (const partida of capitulo.partidas) {
+        const item = await Item.findOne({ code: partida.cod })
+        if (item) {
+          const { name, unit, price } = item
+          sheet.addRow({
+            ...partida,
+            name,
+            unit,
+            price,
+            amount: (partida.quantity * price).toFixed(2),
+          })
+        }
+      }
+    }
 
-// Guardar el libro como un archivo Excel
-const excelFilePath = `${nombreLibro}.xlsx`
+    // Configurar encabezados HTTP para forzar la descarga del archivo binario
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${nombreLibro}.xlsx"`
+    )
 
-workbook.xlsx
-  .writeFile(excelFilePath)
-  .then(() => {
-    console.log(`Archivo Excel creado en: ${excelFilePath}`)
-  })
-  .catch((error) => {
-    console.error('Error al crear el archivo Excel:', error)
-  })
-    res.status(200).json({ message: 'Hola Excel!!!' })
+    // Escribir el libro de Excel directamente sobre la respuesta Express
+    await workbook.xlsx.write(res)
+    res.status(200).end()
   } catch (err) {
     next(err)
   }
